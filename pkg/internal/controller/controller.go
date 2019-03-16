@@ -92,6 +92,10 @@ type Controller struct {
 	// Kubernetes API.
 	Recorder record.EventRecorder
 
+	// StartHook will be executed after the controller started(cache synced)
+	// but before sending requests to Reconciler.
+	StartHook func() error
+
 	// TODO(community): Consider initializing a logger with the Controller Name as the tag
 }
 
@@ -144,6 +148,12 @@ func (c *Controller) Start(stop <-chan struct{}) error {
 		log.Error(err, "Could not wait for Cache to sync", "controller", c.Name)
 		c.mu.Unlock()
 		return err
+	}
+
+	if c.StartHook != nil {
+		if err := c.StartHook(); err != nil {
+			log.Error(err, "Could not execute StartHook", "controller", c.Name)
+		}
 	}
 
 	if c.JitterPeriod == 0 {

@@ -112,6 +112,21 @@ var _ = Describe("controller", func() {
 
 			close(done)
 		})
+
+		It("should invoke the start hook", func(done Done) {
+			// Use a stopped channel so Start doesn't block
+			stopped := make(chan struct{})
+			close(stopped)
+
+			hookExecuted := false
+			ctrl.StartHook = func() error {hookExecuted = true; return nil}
+			ctrl.WaitForCacheSync = func(<-chan struct{}) bool { return true }
+
+			Expect(ctrl.Start(stopped)).NotTo(HaveOccurred())
+			Expect(hookExecuted).To(BeTrue())
+
+			close(done)
+		})
 	})
 
 	Describe("Watch", func() {

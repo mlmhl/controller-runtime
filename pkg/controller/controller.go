@@ -35,6 +35,10 @@ type Options struct {
 
 	// Reconciler reconciles an object
 	Reconciler reconcile.Reconciler
+
+	// StartHook will be executed after the controller started(cache synced)
+	// but before sending requests to Reconciler.
+	StartHook func() error
 }
 
 // Controller implements a Kubernetes API.  A Controller manages a work queue fed reconcile.Requests
